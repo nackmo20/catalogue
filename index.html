@@ -323,16 +323,50 @@
         
         .book-content {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr;
             height: calc(210mm - 80px);
         }
-        
-        .book-left {
+
+        .book-layout {
             padding: 40px;
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto 1fr auto;
+            grid-template-areas:
+                "title title"
+                "info ."
+                "pitch .";
+            height: 100%;
         }
-        
+
+        .layout-info-top-left {
+            grid-template-areas:
+                "title title"
+                "info ."
+                "pitch .";
+        }
+
+        .layout-info-top-right {
+            grid-template-areas:
+                "title title"
+                ". info"
+                ". pitch";
+        }
+
+        .layout-info-bottom-left {
+            grid-template-areas:
+                "title title"
+                ". info"
+                "pitch .";
+        }
+
+        .layout-info-bottom-right {
+            grid-template-areas:
+                "title title"
+                "info ."
+                ". pitch";
+        }
+
         .book-title {
             font-family: 'Playfair Display', serif;
             font-size: 32px;
@@ -340,10 +374,14 @@
             color: #2c3e50;
             margin-bottom: 20px;
             line-height: 1.2;
+            grid-area: title;
+            justify-self: start;
         }
-        
+
         .book-info {
             margin-bottom: 30px;
+            grid-area: info;
+            align-self: start;
         }
         
         .info-row {
@@ -372,8 +410,9 @@
             font-size: 12px;
             line-height: 1.6;
             color: #2c3e50;
-            flex: 1;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            grid-area: pitch;
+            align-self: end;
         }
         
         /* Contours colorés pour le pitch selon le chapitre */
@@ -382,13 +421,25 @@
         .chapter-3 .book-pitch { border: 3px solid #d299c2; }
         .chapter-4 .book-pitch { border: 3px solid #AFE0CE; }
         
-        .book-right {
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+        .layout-info-top-left .book-info,
+        .layout-info-bottom-right .book-info {
+            justify-self: start;
         }
-        
+
+        .layout-info-top-right .book-info,
+        .layout-info-bottom-left .book-info {
+            justify-self: end;
+        }
+
+        .layout-info-top-left .book-pitch,
+        .layout-info-bottom-left .book-pitch {
+            justify-self: start;
+        }
+
+        .layout-info-top-right .book-pitch,
+        .layout-info-bottom-right .book-pitch {
+            justify-self: end;
+        }
         .main-cover {
             background: #f8f9fa;
             border-radius: 15px;
@@ -628,11 +679,11 @@
             </div>
             
             <div class="book-content">
-                <div class="book-left">
+                <div class="book-layout layout-info-top-left">
                     <h2 class="book-title">Mirza gets away</h2>
                   
                     
-                    <div class="book-right">
+                    <div class="book-info">
                         <div class="info-row">
                             <span class="info-value">Marion Sonet</span>
                         </div>
@@ -677,7 +728,7 @@
     </div>
     
     <div class="book-content">
-        <div class="book-left">
+        <div class="book-layout layout-info-top-right">
             <h2 class="book-title">The teapots' day</h2>
             
             <div class="book-info">
@@ -727,7 +778,7 @@
     </div>
     
     <div class="book-content">
-        <div class="book-left">
+        <div class="book-layout layout-info-bottom-left">
             <h2 class="book-title">Two little owls</h2>
             
             <div class="book-info">
@@ -777,7 +828,7 @@
     </div>
     
     <div class="book-content">
-        <div class="book-left">
+        <div class="book-layout layout-info-bottom-right">
             <h2 class="book-title">The Rain</h2>
             
             <div class="book-info">
@@ -829,7 +880,7 @@
     </div>
     
     <div class="book-content">
-        <div class="book-left">
+        <div class="book-layout layout-info-top-left">
             <h2 class="book-title">When I walk in the desert</h2>
             
             <div class="book-info">
@@ -877,7 +928,7 @@
     </div>
     
     <div class="book-content">
-        <div class="book-left">
+        <div class="book-layout layout-info-top-right">
             <h2 class="book-title">Around a tree</h2>
             
             <div class="book-info">
@@ -931,7 +982,7 @@
     </div>
     
     <div class="book-content">
-        <div class="book-left">
+        <div class="book-layout layout-info-bottom-left">
             <h2 class="book-title">When I walk in the desert</h2>
             
             <div class="book-info">
@@ -969,7 +1020,7 @@
     </div>
     
     <div class="book-content">
-        <div class="book-left">
+        <div class="book-layout layout-info-bottom-right">
             <h2 class="book-title">Zhu and the pearl of water</h2>
             
             <div class="book-info">
@@ -1010,7 +1061,7 @@
     </div>
     
     <div class="book-content">
-        <div class="book-left">
+        <div class="book-layout layout-info-top-left">
             <h2 class="book-title">The Ear of the forest</h2>
             
             <div class="book-info">
@@ -1049,7 +1100,7 @@
     </div>
     
     <div class="book-content">
-        <div class="book-left">
+        <div class="book-layout layout-info-top-right">
             <h2 class="book-title">The Dragon's shadow</h2>
             
             <div class="book-info">
@@ -1089,7 +1140,7 @@
     </div>
     
     <div class="book-content">
-        <div class="book-left">
+        <div class="book-layout layout-info-bottom-left">
             <h2 class="book-title">Little Dust's journey</h2>
             
             <div class="book-info">
@@ -1129,7 +1180,7 @@
     </div>
     
     <div class="book-content">
-        <div class="book-left">
+        <div class="book-layout layout-info-bottom-right">
             <h2 class="book-title">Tale of the dark night</h2>
             
             <div class="book-info">
@@ -1170,7 +1221,7 @@
     </div>
     
     <div class="book-content">
-        <div class="book-left">
+        <div class="book-layout layout-info-top-left">
             <h2 class="book-title">The last oak</h2>
             
             <div class="book-info">
@@ -1210,7 +1261,7 @@
     </div>
     
     <div class="book-content">
-        <div class="book-left">
+        <div class="book-layout layout-info-top-right">
             <h2 class="book-title">Traces</h2>
             
             <div class="book-info">
@@ -1252,7 +1303,7 @@
     </div>
     
     <div class="book-content">
-        <div class="book-left">
+        <div class="book-layout layout-info-bottom-left">
             <h2 class="book-title">We must turn off the tap!</h2>
             
             <div class="book-info">
@@ -1292,7 +1343,7 @@
     </div>
     
     <div class="book-content">
-        <div class="book-left">
+        <div class="book-layout layout-info-bottom-right">
             <h2 class="book-title">Nina's autumn</h2>
             
             <div class="book-info">
@@ -1331,7 +1382,7 @@
     </div>
     
     <div class="book-content">
-        <div class="book-left">
+        <div class="book-layout layout-info-top-left">
             <h2 class="book-title">Titi's Journey</h2>
             
             <div class="book-info">
@@ -1372,7 +1423,7 @@
     </div>
     
     <div class="book-content">
-        <div class="book-left">
+        <div class="book-layout layout-info-top-right">
             <h2 class="book-title">The butterfly in a hurry</h2>
             
             <div class="book-info">
@@ -1410,7 +1461,7 @@
     </div>
     
     <div class="book-content">
-        <div class="book-left">
+        <div class="book-layout layout-info-bottom-left">
             <h2 class="book-title">A curious ant</h2>
             
             <div class="book-info">
@@ -1449,7 +1500,7 @@
     </div>
     
     <div class="book-content">
-        <div class="book-left">
+        <div class="book-layout layout-info-bottom-right">
             <h2 class="book-title">The mother fish</h2>
             
             <div class="book-info">
@@ -1487,7 +1538,7 @@
     </div>
     
     <div class="book-content">
-        <div class="book-left">
+        <div class="book-layout layout-info-top-left">
             <h2 class="book-title">Lili Pollen</h2>
             
             <div class="book-info">
@@ -1521,7 +1572,7 @@
       <div class="publisher-name">Bluedot</div>
     </div>
     <div class="book-content">
-      <div class="book-left">
+      <div class="book-layout layout-info-top-right">
         <h2 class="book-title">Dragons' dream</h2>
         <div class="book-info">
           <div class="info-row"><span class="info-value">Faustine Brunet</span></div>
@@ -1553,7 +1604,7 @@
       <div class="publisher-name">Bluedot</div>
     </div>
     <div class="book-content">
-      <div class="book-left">
+      <div class="book-layout layout-info-bottom-left">
         <h2 class="book-title">It's all good with Bob</h2>
         <div class="book-info">
           <div class="info-row"><span class="info-value">Faustine Brunet</span></div>
@@ -1587,7 +1638,7 @@
           <div class="publisher-name">Un chat la nuit</div>
         </div>
         <div class="book-content">
-          <div class="book-left">
+          <div class="book-layout layout-info-bottom-right">
             <h2 class="book-title">Comme une orange</h2>
             <div class="book-info">
               <div class="info-row">
@@ -1627,7 +1678,7 @@
             <div class="publisher-name">Comme une orange</div>
         </div>
         <div class="book-content">
-            <div class="book-left">
+            <div class="book-layout layout-info-top-left">
                 <h2 class="book-title">The apple and the catch</h2>
                 <div class="book-info">
                     <div class="info-row">
@@ -1668,7 +1719,7 @@
             <div class="publisher-name">Comme une orange</div>
         </div>
         <div class="book-content">
-            <div class="book-left">
+            <div class="book-layout layout-info-top-right">
                 <h2 class="book-title">A Rainbow</h2>
                 <div class="book-info">
                     <div class="info-row">
@@ -1709,7 +1760,7 @@
             <div class="publisher-name">Comme une orange</div>
         </div>
         <div class="book-content">
-            <div class="book-left">
+            <div class="book-layout layout-info-bottom-left">
                 <h2 class="book-title">Galet</h2>
                 <div class="book-info">
                     <div class="info-row">
@@ -1750,7 +1801,7 @@
             <div class="publisher-name">Comme une orange</div>
         </div>
         <div class="book-content">
-            <div class="book-left">
+            <div class="book-layout layout-info-bottom-right">
                 <h2 class="book-title">Pierre and Lou</h2>
                 <div class="book-info">
                     <div class="info-row">
@@ -1791,7 +1842,7 @@
             <div class="publisher-name">Panthera</div>
         </div>
         <div class="book-content">
-            <div class="book-left">
+            <div class="book-layout layout-info-top-left">
                 <h2 class="book-title">Yune</h2>
                 <div class="book-info">
                     <div class="info-row">
@@ -1832,7 +1883,7 @@
             <div class="publisher-name">Panthera</div>
         </div>
         <div class="book-content">
-            <div class="book-left">
+            <div class="book-layout layout-info-top-right">
                 <h2 class="book-title">Rain</h2>
                 <div class="book-info">
                     <div class="info-row">
@@ -1873,7 +1924,7 @@
             <div class="publisher-name">Panthera</div>
         </div>
         <div class="book-content">
-            <div class="book-left">
+            <div class="book-layout layout-info-bottom-left">
                 <h2 class="book-title">The Hungry King</h2>
                 <div class="book-info">
                     <div class="info-row">
@@ -1913,7 +1964,7 @@
             <div class="publisher-name">Panthera</div>
         </div>
         <div class="book-content">
-            <div class="book-left">
+            <div class="book-layout layout-info-bottom-right">
                 <h2 class="book-title">Cosmos Big Band</h2>
                 <div class="book-info">
                     <div class="info-row">
@@ -1954,7 +2005,7 @@
             <div class="publisher-name">Panthera</div>
         </div>
         <div class="book-content">
-            <div class="book-left">
+            <div class="book-layout layout-info-top-left">
                 <h2 class="book-title">Only mauve remains</h2>
                 <div class="book-info">
                     <div class="info-row">
@@ -1994,7 +2045,7 @@
             <div class="publisher-name">Comme une orange</div>
         </div>
         <div class="book-content">
-            <div class="book-left">
+            <div class="book-layout layout-info-top-right">
                 <h2 class="book-title">Serena of the Desert</h2>
                 <div class="book-info">
                     <div class="info-row">
@@ -2034,7 +2085,7 @@
             <div class="publisher-name">Melrakki</div>
         </div>
         <div class="book-content">
-            <div class="book-left">
+            <div class="book-layout layout-info-bottom-left">
                 <h2 class="book-title">Seasons of the Forest</h2>
                 <div class="book-info">
                     <div class="info-row">
@@ -2072,7 +2123,7 @@
             <div class="publisher-name">Melrakki</div>
         </div>
         <div class="book-content">
-            <div class="book-left">
+            <div class="book-layout layout-info-bottom-right">
                 <h2 class="book-title">Wild diary</h2>
                 <div class="book-info">
                     <div class="info-row">
@@ -2110,7 +2161,7 @@
             <div class="publisher-name">Melrakki</div>
         </div>
         <div class="book-content">
-            <div class="book-left">
+            <div class="book-layout layout-info-top-left">
                 <h2 class="book-title">Second chance</h2>
                 <div class="book-info">
                     <div class="info-row">
@@ -2148,7 +2199,7 @@
             <div class="publisher-name">Melrakki</div>
         </div>
         <div class="book-content">
-            <div class="book-left">
+            <div class="book-layout layout-info-top-right">
                 <h2 class="book-title">Socotra, men and Dragon Trees</h2>
                 <div class="book-info">
                     <div class="info-row">
