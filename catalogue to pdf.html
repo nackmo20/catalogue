@@ -381,7 +381,53 @@
         .chapter-2 .book-pitch { border: 3px solid #D0F0C0 }
         .chapter-3 .book-pitch { border: 3px solid #d299c2; }
         .chapter-4 .book-pitch { border: 3px solid #AFE0CE; }
-        
+
+        .book-info, .book-pitch {
+            width: 80%;
+        }
+
+        .book-pitch {
+            flex: 0 0 auto;
+        }
+
+        /* Variations de position pour book-info et book-pitch */
+        .layout-1 .book-info {
+            align-self: flex-end;
+        }
+        .layout-1 .book-pitch {
+            margin-top: auto;
+            align-self: flex-start;
+        }
+
+        .layout-2 .book-info {
+            order: 2;
+            margin-top: auto;
+            align-self: flex-end;
+        }
+        .layout-2 .book-pitch {
+            order: 1;
+            align-self: flex-start;
+        }
+
+        .layout-3 .book-info {
+            align-self: flex-start;
+        }
+        .layout-3 .book-pitch {
+            order: 2;
+            margin-top: auto;
+            align-self: flex-end;
+        }
+
+        .layout-4 .book-info {
+            order: 2;
+            margin-top: auto;
+            align-self: flex-start;
+        }
+        .layout-4 .book-pitch {
+            order: 1;
+            align-self: flex-end;
+        }
+
         .book-right {
             padding: 40px;
             display: flex;
@@ -632,7 +678,7 @@
                     <h2 class="book-title">Mirza gets away</h2>
                   
                     
-                    <div class="book-right">
+                    <div class="book-info">
                         <div class="info-row">
                             <span class="info-value">Marion Sonet</span>
                         </div>
@@ -2309,6 +2355,12 @@
         window.addEventListener('load', function() {
             console.log('🚀 Convertisseur HTML vers PDF chargé !');
             console.log('💡 Astuce: Utilisez Ctrl+S (ou Cmd+S) pour générer rapidement le PDF');
+
+            // Appliquer les variations de mise en page
+            const layouts = ['layout-1', 'layout-2', 'layout-3', 'layout-4'];
+            document.querySelectorAll('.book-left').forEach((el, idx) => {
+                el.classList.add(layouts[idx % layouts.length]);
+            });
         });
     </script>
 </body>
