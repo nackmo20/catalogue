@@ -1,0 +1,2315 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catalogue Droits Étrangers - Livres Jeunesse</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Playfair+Display:wght@400;600;700&display=swap');
+        
+        /* Styles du contrôleur PDF */
+        .pdf-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+            z-index: 1000;
+            border: 2px solid #667eea;
+            min-width: 280px;
+        }
+        
+        .pdf-controls h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+        }
+        .publishers-page {
+    padding: 40px;
+    border: 2px solid #667eea;
+    background: #fff;
+}
+
+.publishers-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 34px;
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2c3e50;
+}
+
+.publishers-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.publisher-card {
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: left;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.publisher-name {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #34495e;
+}
+
+.publisher-description {
+    font-size: 11px;
+    line-height: 1.5;
+    color: #555;
+    text-align: justify;
+}
+
+        .download-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .download-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #ecf0f1;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            display: none;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .status-text {
+            font-size: 14px;
+            color: #7f8c8d;
+            text-align: center;
+            margin-top: 5px;
+            min-height: 20px;
+        }
+        
+        .options {
+            margin-bottom: 15px;
+        }
+        
+        .option-group {
+            margin-bottom: 10px;
+        }
+        
+        .option-group label {
+            display: block;
+            font-size: 14px;
+            color: #34495e;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .option-group select, .option-group input {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #ecf0f1;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .option-group select:focus, .option-group input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        
+        /* Styles originaux du catalogue */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            background: #f8f9fa;
+            padding-top: 20px;
+        }
+        
+        .catalogue-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .page {
+            width: 297mm;
+            height: 210mm;
+            margin: 0 auto 20px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            page-break-after: always;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #e8e8e8;
+        }
+        
+        /* Numéros de page */
+        .page-number {
+            position: absolute;
+            bottom: 20px;
+            right: 30px;
+            font-size: 14px;
+            color: #7f8c8d;
+            font-weight: 300;
+        }
+        
+        /* Page de garde */
+        .cover-page {
+            background: white;
+            color: #2c3e50;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+         
+        }
+        
+        .cover-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .cover-subtitle {
+            font-size: 24px;
+            font-weight: 300;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        
+        .cover-decoration {
+            width: 200px;
+            height: 4px;
+            background: #667eea;
+            border-radius: 2px;
+            margin: 20px auto;
+        }
+        
+        .cover-year {
+            font-size: 18px;
+            font-weight: 400;
+            margin-top: 40px;
+        }
+        
+        /* Sommaire */
+        .summary-page {
+            padding: 40px 50px;
+            background: white;
+            border: 4px solid #b5a8ed;
+        }
+        
+        .summary-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .summary-content {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+        }
+        
+        .summary-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            border: 3px solid #b5a8ed;
+        }
+        
+        .summary-section h3 {
+            color: #34495e;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .summary-item {
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            font-size: 10px;
+        }
+        
+        /* Pages de livre */
+        .book-page {
+            position: relative;
+         
+           
+        }
+        
+        /* Couleurs par chapitre */
+        .book-page.chapter-1 { background: white; border: 4px solid #fcb69f; }
+        .book-page.chapter-2 { background: white; border: 4px solid #D0F0C0; }
+        .book-page.chapter-3 { background: white; border: 4px solid #d299c2; }
+        .book-page.chapter-4 { background: white; border: 4px solid #AFE0CE; }
+        
+        .publisher-banner {
+            height: 80px;
+            background: white;
+            display: flex;
+            align-items: center;
+            padding: 0 40px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .publisher-logo {
+            width: 60px;
+            height: 60px;
+            background: #34495e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
+            margin-right: 20px;
+        }
+        
+        .publisher-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .book-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: calc(210mm - 80px);
+        }
+        
+        .book-left {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .book-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+        
+        .book-info {
+            margin-bottom: 30px;
+        }
+        
+        .info-row {
+            display: flex;
+            margin-bottom: 11px;
+            align-items: flex-start;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #34495e;
+            min-width: 120px;
+            font-size: 14px;
+        }
+        
+        .info-value {
+            color: #2c3e50;
+            font-size: 14px;
+            flex: 1;
+        }
+        
+        .book-pitch {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #2c3e50;
+            flex: 1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        /* Contours colorés pour le pitch selon le chapitre */
+        .chapter-1 .book-pitch { border: 3px solid #fcb69f; }
+        .chapter-2 .book-pitch { border: 3px solid #D0F0C0 }
+        .chapter-3 .book-pitch { border: 3px solid #d299c2; }
+        .chapter-4 .book-pitch { border: 3px solid #AFE0CE; }
+        
+        .book-right {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .main-cover {
+            background: #f8f9fa;
+            border-radius: 15px;
+            height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+            border: 2px solid #000;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .cover-placeholder {
+            color: #7f8c8d;
+            font-size: 14px;
+            text-align: center;
+            font-weight: 300;
+        }
+        
+        .illustrations-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            flex: 1;
+        }
+        
+        .illustration-frame {
+            background: #f8f9fa;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 2px solid #000;
+            min-height: 100px;
+        }
+        
+        .illustration-placeholder {
+            color: #95a5a6;
+            font-size: 12px;
+            text-align: center;
+            font-weight: 300;
+        }
+        
+        /* Décorations */
+        .decorative-element {
+            position: absolute;
+            opacity: 0.05;
+        }
+        
+        .circle-decoration {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #e8e8e8;
+        }
+        
+        .triangle-decoration {
+            width: 0;
+            height: 0;
+            border-left: 50px solid transparent;
+            border-right: 50px solid transparent;
+            border-bottom: 87px solid #e8e8e8;
+        }
+        
+        @media print {
+            .pdf-controls {
+                display: none !important;
+            }
+            
+            .page {
+                margin: 0;
+                box-shadow: none;
+                border: none;
+            }
+            
+            body {
+                background: white;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Contrôles PDF -->
+    <div class="pdf-controls">
+        <h3>📄 Générateur PDF</h3>
+        
+        <div class="options">
+            <div class="option-group">
+                <label for="filename">Nom du fichier :</label>
+                <input type="text" id="filename" value="Catalogue-Droits-Etrangers-2025" placeholder="Nom du fichier sans extension">
+            </div>
+            
+            <div class="option-group">
+                <label for="quality">Qualité :</label>
+                <select id="quality">
+                    <option value="1">Standard (rapide)</option>
+                    <option value="2" selected>Haute (recommandé)</option>
+                    <option value="3">Ultra (lent)</option>
+                </select>
+            </div>
+        </div>
+        
+        <button class="download-btn" onclick="generatePDF()">
+            🚀 Télécharger en PDF
+        </button>
+        
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+        
+        <div class="status-text"></div>
+    </div>
+
+    <div class="catalogue-container">
+        <!-- Page de garde -->
+        <div class="page cover-page" id="page-1">
+            <div class="decorative-element circle-decoration" style="top: 10%; left: 80%;"></div>
+            <div class="decorative-element triangle-decoration" style="bottom: 20%; right: 85%;"></div>
+            
+            <h1 class="cover-title">Catalogue</h1>
+            <div class="cover-decoration"></div>
+            <h2 class="cover-subtitle">Droits Étrangers</h2>
+            <h3 class="cover-subtitle">Littérature Jeunesse</h3>
+            <div class="cover-year">2025</div>
+            <div class="page-number">1</div>
+        </div>
+<!-- Page Présentation des maisons d'édition -->
+<div class="page publishers-page">
+    <h1 class="publishers-title">Nos Maisons d’Édition</h1>
+    
+    <div class="publishers-grid">
+        <div class="publisher-card">
+            <h2 class="publisher-name">Un chat la nuit</h2>
+            <p class="publisher-description">
+                This french publishing house specialised in children’s books want to challenge 
+                the imagination of children through stories and illustrations full of values,
+                such as respect and kindness. They want to create an opening to the world, 
+                to nature and its beauty.
+            </p>
+        </div>
+        
+        <div class="publisher-card">
+            <h2 class="publisher-name">Bluedot</h2>
+            <p class="publisher-description">
+                Specialised in children’s books, Bluedot offers joyful and colourful picture 
+                books in english and french: they are perfect for a right acquisition in english, 
+                as you don’t have to worry about the translation! The stories they share are full 
+                of wonders, meant to help children blossom and flourish. In their catalogue you 
+                will find a lot of beautiful values, such as respect of the environment, love for 
+                nature, discovery of other cultures, children’s development.
+            </p>
+        </div>
+        
+        <div class="publisher-card">
+            <h2 class="publisher-name">Melrakki</h2>
+            <p class="publisher-description">
+                Melrakki is a french publisher of photography books and children’s picture books. 
+                They have one main concern: Nature and its protection. The publishing house is 
+                committed to the representation of the living and the defence of the natural world. 
+                Their commitment is reflected not only in their catalogue but also in their work ethic: 
+                they only print locally, and give back a part of their gains to an association 
+                of protection of the wild fauna.
+            </p>
+        </div>
+        
+        <div class="publisher-card">
+            <h2 class="publisher-name">Comme une orange</h2>
+            <p class="publisher-description">
+                Comme une orange is a publishing house created at the end of 2010 by a group of authors 
+                and enthusiasts of comics and children's literature. It tries to publish books that are 
+                different. Books that grab you, move you, make you laugh, think and reflect. The publishers 
+                have created a catalog of around twenty varied and quality titles, whether graphic novels or 
+                illustrated books, for the youngest, the oldest or simply everyone, because at Comme une orange, 
+                they don't really like to put books in boxes…
+            </p>
+        </div>
+        
+        <div class="publisher-card">
+            <h2 class="publisher-name">Panthera</h2>
+            <p class="publisher-description">
+                Panthera is an independent publishing house founded by Céline Lefeuvre and Marianne Selli in 2022. 
+                It delves into a variety of graphic forms to make each title unique in both its content and form. 
+                The program includes picture books and documentaries for children, and comics and graphic novels for adults. 
+                Illustration is featured in all cases. At the heart of this wild adventure, the publishers want to give a 
+                voice to those who, through their testimony and eloquence, shed light on contemporary phenomena in our societies.
+            </p>
+        </div>
+    </div>
+
+    <div class="page-number">2</div>
+</div>
+
+
+        <!-- Sommaire -->
+        <div class="page summary-page" id="page-2">
+            <h1 class="summary-title">Sommaire</h1>
+            <div class="summary-content">
+                <div class="summary-section">
+                    <h3>Picture books</h3>
+                  
+                </div>
+                
+                <div class="summary-section">
+                    <h3>Graphic novels</h3>
+                    <div class="summary-item">L'École des Magiciens</div>
+                    <div class="summary-item">Les Détectives du Quartier</div>
+                    <div class="summary-item">Mila et son Robot</div>
+                </div>
+                
+                <div class="summary-section">
+                    <h3>Fiction</h3>
+                    <div class="summary-item">Le Mystère de la Forêt Enchantée</div>
+                    <div class="summary-item">Pirates des Temps Modernes</div>
+                    <div class="summary-item">L'Académie des Super-Héros</div>
+                </div>
+                
+                <div class="summary-section">
+                    <h3>Fine arts</h3>
+                    <div class="summary-item">Les Gardiens des Étoiles</div>
+                    <div class="summary-item">Révolution Digitale</div>
+                    <div class="summary-item">Le Dernier Royaume</div>
+                </div>
+            </div>
+            <div class="page-number">2</div>
+        </div>
+
+        <!-- Exemple de page de livre 1 -->
+        <div class="page book-page chapter-1" id="page-3">
+            <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+            <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+            
+            <div class="publisher-banner">
+                <div class="publisher-logo">UCL</div>
+                <div class="publisher-name">Un chat la nuit</div>
+            </div>
+            
+            <div class="book-content">
+                <div class="book-left">
+                    <h2 class="book-title">Mirza gets away</h2>
+                  
+                    
+                    <div class="book-right">
+                        <div class="info-row">
+                            <span class="info-value">Marion Sonet</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-value">2+</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-value">19,5*26,5 cm, 40 pages</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-value">Octobre 2022</span>
+                        </div>
+                        <div class="info-row">
+                    
+                            <span class="info-value"> Rights sold: Italy</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-value">16€</span>
+                        </div>
+                    </div>
+                    <div class="book-pitch">
+                        <strong>Pitch :</strong><br><br>
+                        A beautiful park, a lovely old lady, a lovely dog. A crazy dog? And pigeons. 
+                        And when Mirza, jealous of those pigeons, starts running after them, everything goes crazy.
+                        A funny, joyful and colourful picture book without text but full of poetry.
+                    </div>
+                
+                </div>
+            
+                
+            </div>
+            <div class="page-number">3</div>
+        </div>
+         <!-- Exemple de page de livre 1 -->
+ <div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+    
+    <div class="publisher-banner">
+        <div class="publisher-logo">UCL</div>
+        <div class="publisher-name">Un chat la nuit</div>
+    </div>
+    
+    <div class="book-content">
+        <div class="book-left">
+            <h2 class="book-title">The teapots' day</h2>
+            
+            <div class="book-info">
+                <div class="info-row">
+                    <span class="info-value">Lamis Rouini and Francine Vergeaux</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-value">3+</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-value">23*20 cm, 44 pages</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-value">April 2024</span>
+                </div>
+                <div class="info-row">
+                  
+                    <span class="info-value">Represented worldwide except China, Hong-Kong and Taïwan</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-value">16,50€</span>
+                </div>
+            </div>
+            
+            <div class="book-pitch">
+                <strong>Pitch :</strong><br><br>
+                The Haikus of Iko is the name of this small series inugurated by The teapots day To the rythm of the seasons Iko expores various emotions with her friends from the old pond, together they make simple or wonderful discoveries with a serene positive and beneficial spirit A breath of fresh and poetic air,
+                thanks to our frog's haikus.
+                Discover the tender and sensitive world of Iko the frog Iko lives in a small hamlet not far from the forest near the old pond Her neighbors are hheris friends There is Ramo the snail and Frida, the hedgehod Ah, and Iko also composes haikus, very short poems from Japan This rainy day in the heart of spring Iko airs her teapots walks under her umbrella writes a few haikus and makes a new friend.
+            </div>
+        </div>
+    
+    
+        
+       
+    </div>
+    <div class="page-number">4</div>
+</div>
+ <!-- Exemple de page de livre 1 -->
+ <div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+    
+    <div class="publisher-banner">
+        <div class="publisher-logo">UCL</div>
+        <div class="publisher-name">Un chat la nuit</div>
+    </div>
+    
+    <div class="book-content">
+        <div class="book-left">
+            <h2 class="book-title">Two little owls</h2>
+            
+            <div class="book-info">
+                <div class="info-row">
+                    <span class="info-value">Françoise Bobe and Claire Nadaud</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-value">3+</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-value">16*26 cm, 36 pages</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-value">Octobre 2024</span>
+                </div>
+                <div class="info-row">
+              
+                    <span class="info-value">Represented worldwide except China, Hong-Kong and Taïwan</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-value">16€</span>
+                </div>
+            </div>
+            
+            <div class="book-pitch">
+                <strong>Pitch :</strong><br><br>
+                All the owls are gray in the dark Above the sleeping village, two owls Petite Chouette and Petibou look for each other call each other meet up and have fun, accomplices and friends.
+                An encounter an impulse towards the other told with joy and simplicity by Françoise Bobe Claire Nadaud pierces the night with her pencils to place Petite Chouette and Petibou on the fluff of the paper An evening story that will be read and reread and the images looked at again and again intil
+                the smallest details are understood.
+                The plus point : Illustrated « documentary » pages expose at the end of the book some of the
+                secrets of Petite Chouette and her family.
+            </div>
+        </div>
+    
+     
+    </div>
+    <div class="page-number">5</div>
+</div>
+ <!-- Exemple de page de livre 1 -->
+ <div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+    
+    <div class="publisher-banner">
+        <div class="publisher-logo">UCL</div>
+        <div class="publisher-name">Un chat la nuit</div>
+    </div>
+    
+    <div class="book-content">
+        <div class="book-left">
+            <h2 class="book-title">The Rain</h2>
+            
+            <div class="book-info">
+                <div class="info-row">
+                    <span class="info-value">Elisa Rocchi and Giulia Torelli</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-value">3+</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-value">20*25 cm, 40 pages</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-value">october 2023</span>
+                </div>
+                <div class="info-row">
+        
+                    <span class="info-value">Represented worldwide except China, Hong-Kong and Taïwan</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-value">18€</span>
+                </div>
+            </div>
+            
+            <div class="book-pitch">
+                <strong>Pitch :</strong><br><br>
+                Rain doesn’t just fall It plays, it laughs, it shivers.
+                It takes all the colours of life.
+                Through this poetic yet simple text, we share the
+                rain’s feelings and come back to the emotions of
+                childhood, while the illustrations bring a touch of
+                humour.
+            </div>
+        </div>
+    
+    
+        
+       
+    </div>
+    <div class="page-number">6</div>
+</div>
+<div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+    
+    <div class="publisher-banner">
+        <div class="publisher-logo">UCL</div>
+        <div class="publisher-name">Un chat la nuit</div>
+    </div>
+    
+    <div class="book-content">
+        <div class="book-left">
+            <h2 class="book-title">When I walk in the desert</h2>
+            
+            <div class="book-info">
+                <div class="info-row">
+                    <span class="info-value">Mickaël El Fathi and Toni Demuro</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-value">3+</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-value">22*27 cm, 40 pages</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-value">march 2022</span>
+                </div>
+                <div class="info-row">
+                 
+                    <span class="info-value">Represented worldwide except China, Hong-Kong and Taïwan</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-value">16€</span>
+                </div>
+            </div>
+            
+            <div class="book-pitch">
+                <strong>Pitch :</strong><br><br>
+                A young girl leads us into the desert. From the chameleon to the caracal and the swift gazelle, it’s not as empty a place as we could imagine!
+                A beautiful journey with animals full of poetry to discover an other culture.
+            </div>
+        </div>
+    
+    
+        
+      
+    </div>
+    <div class="page-number">7</div>
+</div>
+<div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+    
+    <div class="publisher-banner">
+        <div class="publisher-logo">UCL</div>
+        <div class="publisher-name">Un chat la nuit</div>
+    </div>
+    
+    <div class="book-content">
+        <div class="book-left">
+            <h2 class="book-title">Around a tree</h2>
+            
+            <div class="book-info">
+                <div class="info-row">
+                    <span class="info-value">Emilia Conesa</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-value">3+</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-value">17*25 cm, 32 pages</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-value">september 2021</span>
+                </div>
+                <div class="info-row">
+                    
+                    <span class="info-value">Represented worldwide except China, Hong-Kong and Taïwan</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-value">14,50€</span>
+                </div>
+            </div>
+            
+            <div class="book-pitch">
+                <strong>Pitch :</strong><br><br>
+                An adventure made of little nothings: twigs, leaves
+                and the power of imagination.
+                A tree is born, grows, and with it a child that plays
+                around, at the entrance of the forest.
+                A friend: a bird to keep him company.
+                But who is looking after the child?
+                A thoughtful and poetic picture book with
+                gorgeous illustrations.
+            </div>
+        </div>
+    
+    
+        
+        
+    </div>
+    <div class="page-number">8</div>
+</div>
+<div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+    
+    <div class="publisher-banner">
+        <div class="publisher-logo">UCL</div>
+        <div class="publisher-name">Un chat la nuit</div>
+    </div>
+    
+    <div class="book-content">
+        <div class="book-left">
+            <h2 class="book-title">When I walk in the desert</h2>
+            
+            <div class="book-info">
+                <div class="info-row"><span class="info-value">Mickaël El Fathi and Toni Demuro</span></div>
+                <div class="info-row"><span class="info-value">3+</span></div>
+                <div class="info-row"><span class="info-value">22*27 cm, 40 pages</span></div>
+                <div class="info-row"><span class="info-value">march 2022</span></div>
+                <div class="info-row">
+                    
+                    <span class="info-value">Represented worldwide except China, Hong-Kong and Taïwan</span>
+                </div>
+                <div class="info-row"><span class="info-value">16€</span></div>
+            </div>
+            
+            <div class="book-pitch">
+                <strong>Pitch :</strong><br><br>
+                A young girl leads us into the desert. From the chameleon to the caracal and
+                the swift gazelle, it’s not as empty a place as we could imagine!<br>
+                A beautiful journey with animals full of poetry to discover an other culture
+            </div>
+        </div>
+    
+  
+    </div>
+    <div class="page-number">9</div>
+</div>
+<!-- PAGE 10 -->
+<div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+    
+    <div class="publisher-banner">
+        <div class="publisher-logo">UCL</div>
+        <div class="publisher-name">Un chat la nuit</div>
+    </div>
+    
+    <div class="book-content">
+        <div class="book-left">
+            <h2 class="book-title">Zhu and the pearl of water</h2>
+            
+            <div class="book-info">
+                <div class="info-row"><span class="info-value">Didier Dufresne and Marion Sonet</span></div>
+                <div class="info-row"><span class="info-value">5+</span></div>
+                <div class="info-row"><span class="info-value">27*24 cm, 36 pages</span></div>
+                <div class="info-row"><span class="info-value">november 2021</span></div>
+                <div class="info-row">
+                    
+                    <span class="info-value">Represented worldwide except China, Hong-Kong and Taïwan</span>
+                </div>
+                <div class="info-row"><span class="info-value">16,50€</span></div>
+            </div>
+            
+            <div class="book-pitch">
+                <strong>Pitch :</strong><br><br>
+                One night, the fire eats all the houses and vegetation of Zhu’s village. 
+                The inhabitants must run, but the next hill is also suffering from a drought.<br><br>
+                A legend says that only the pearl of water can defeat fire. Zhu decides she must act. 
+                With the help of Niao, her bird friend, she leaves for the Spring Mountain. 
+                There, she will have to face a monstruous spider to bring back water to her people.<br><br>
+                A poetic picture book full of adventure and bravery for children.
+            </div>
+        </div>
+    
+    
+    </div>
+    <div class="page-number">10</div>
+</div>
+<!-- PAGE 11 -->
+<div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+    
+    <div class="publisher-banner">
+        <div class="publisher-logo">UCL</div>
+        <div class="publisher-name">Un chat la nuit</div>
+    </div>
+    
+    <div class="book-content">
+        <div class="book-left">
+            <h2 class="book-title">The Ear of the forest</h2>
+            
+            <div class="book-info">
+                <div class="info-row"><span class="info-value">Arnaud Descheemacker</span></div>
+                <div class="info-row"><span class="info-value">3+</span></div>
+                <div class="info-row"><span class="info-value">27*20 cm, 32 pages</span></div>
+                <div class="info-row"><span class="info-value">february 2022</span></div>
+                <div class="info-row">
+                    
+                    <span class="info-value">Represented worldwide except China, Hong-Kong and Taïwan</span>
+                </div>
+                <div class="info-row"><span class="info-value">15,50€</span></div>
+            </div>
+            
+            <div class="book-pitch">
+                <strong>Pitch :</strong><br><br>
+                A playful invitation to discover the other world of the forest.<br>
+                With very detailed illustrations, the book shows us the flora and fauna of our european forests.<br>
+                With surprising elements – musical instruments here and there in the forest.<br>
+                How will the forest inhabitants react to this invasion?
+            </div>
+        </div>
+    
+     
+    </div>
+    <div class="page-number">11</div>
+</div>
+<!-- PAGE 12 -->
+<div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+    
+    <div class="publisher-banner">
+        <div class="publisher-logo">CUO</div>
+        <div class="publisher-name">Comme une orange</div>
+    </div>
+    
+    <div class="book-content">
+        <div class="book-left">
+            <h2 class="book-title">The Dragon's shadow</h2>
+            
+            <div class="book-info">
+                <div class="info-row"><span class="info-value">Eric Wantiez and Claire Godard</span></div>
+                <div class="info-row"><span class="info-value">3+</span></div>
+                <div class="info-row"><span class="info-value">25*18 cm, 48 pages, paper backed</span></div>
+                <div class="info-row"><span class="info-value">october 2024</span></div>
+                <div class="info-row">
+                    
+                    <span class="info-value">Represented worldwide</span>
+                </div>
+                <div class="info-row"><span class="info-value">13€</span></div>
+            </div>
+            
+            <div class="book-pitch">
+                <strong>Pitch :</strong><br><br>
+                A dragon has taken up residence in the mountain.<br>
+                A black dragon. For some time now, it has been terrorizing the village.<br><br>
+                "A black dragon! By the word of Dragonsplitter, I will rid you of this evil beast."
+            </div>
+        </div>
+    
+     
+    </div>
+    <div class="page-number">12</div>
+</div>
+
+
+<!-- PAGE 13 -->
+<div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+    
+    <div class="publisher-banner">
+        <div class="publisher-logo">CUO</div>
+        <div class="publisher-name">Comme une orange</div>
+    </div>
+    
+    <div class="book-content">
+        <div class="book-left">
+            <h2 class="book-title">Little Dust's journey</h2>
+            
+            <div class="book-info">
+                <div class="info-row"><span class="info-value">Eric Wantiez, Geoffrey Grimal and Audrey Potrat</span></div>
+                <div class="info-row"><span class="info-value">3+</span></div>
+                <div class="info-row"><span class="info-value">18*22 cm, 64 pages, soft cover</span></div>
+                <div class="info-row"><span class="info-value">october 2019</span></div>
+                <div class="info-row">
+                    
+                    <span class="info-value">Represented worldwide</span>
+                </div>
+                <div class="info-row"><span class="info-value">11€</span></div>
+            </div>
+            
+            <div class="book-pitch">
+                <strong>Pitch :</strong><br><br>
+                Little Dust is bored under the stairs. What she wants is to travel, to explore the wide world. 
+                But it's not so simple when you're just a speck of dust.<br>
+                What if there's a draft?
+            </div>
+        </div>
+    
+      
+    </div>
+    <div class="page-number">13</div>
+</div>
+
+
+<!-- PAGE 14 -->
+<div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+    
+    <div class="publisher-banner">
+        <div class="publisher-logo">CUO</div>
+        <div class="publisher-name">Comme une orange</div>
+    </div>
+    
+    <div class="book-content">
+        <div class="book-left">
+            <h2 class="book-title">Tale of the dark night</h2>
+            
+            <div class="book-info">
+                <div class="info-row"><span class="info-value">Eric Wantiez and Claire Godard</span></div>
+                <div class="info-row"><span class="info-value">3+</span></div>
+                <div class="info-row"><span class="info-value">15*21 cm, 68 pages</span></div>
+                <div class="info-row"><span class="info-value">january 2017</span></div>
+                <div class="info-row">
+                    
+                    <span class="info-value">Represented worldwide</span>
+                </div>
+                <div class="info-row"><span class="info-value">11€</span></div>
+            </div>
+            
+            <div class="book-pitch">
+                <strong>Pitch :</strong><br><br>
+                It was a long time ago, at the very beginning of the world, in a time when the very first hunter of the steppes lived. 
+                He was afraid of nothing. Neither of wild beasts, nor of the fire of the volcano, nor of the earth that sometimes trembled.<br>
+                He was afraid of nothing, except the night.<br><br>
+                One morning, he decided to go and ask the sun to stop setting.
+            </div>
+        </div>
+    
+        
+</div>
+    <div class="page-number">14</div>
+</div>
+
+
+<!-- PAGE 15 -->
+<div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+    
+    <div class="publisher-banner">
+        <div class="publisher-logo">CUO</div>
+        <div class="publisher-name">Comme une orange</div>
+    </div>
+    
+    <div class="book-content">
+        <div class="book-left">
+            <h2 class="book-title">The last oak</h2>
+            
+            <div class="book-info">
+                <div class="info-row"><span class="info-value">Claire Godard</span></div>
+                <div class="info-row"><span class="info-value">3+</span></div>
+                <div class="info-row"><span class="info-value">15*21 cm, 52 pages, paper backed</span></div>
+                <div class="info-row"><span class="info-value">september 2022</span></div>
+                <div class="info-row">
+                    
+                    <span class="info-value">Represented worldwide</span>
+                </div>
+                <div class="info-row"><span class="info-value">12€</span></div>
+            </div>
+            
+            <div class="book-pitch">
+                <strong>Pitch :</strong><br><br>
+                The last oak tree in the world speaks to us humans, who have precipitated the disappearance of the forests. 
+                It speaks especially to children, to the youngest human beings, who perhaps have not yet lost the gift of hearing it...<br><br>
+                To hear its first memories, its ecstasies, its sorrows, and its hopes.
+            </div>
+        </div>
+    
+     
+    </div>
+    <div class="page-number">15</div>
+</div>
+
+
+<!-- PAGE 16 -->
+<div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+    
+    <div class="publisher-banner">
+        <div class="publisher-logo">CUO</div>
+        <div class="publisher-name">Comme une orange</div>
+    </div>
+    
+    <div class="book-content">
+        <div class="book-left">
+            <h2 class="book-title">Traces</h2>
+            
+            <div class="book-info">
+                <div class="info-row"><span class="info-value">Mathieu Siam</span></div>
+                <div class="info-row"><span class="info-value">3+</span></div>
+                <div class="info-row"><span class="info-value">20*20 cm, 40 pages</span></div>
+                <div class="info-row"><span class="info-value">july 2020</span></div>
+                <div class="info-row">
+                    
+                    <span class="info-value">Represented worldwide</span>
+                </div>
+                <div class="info-row"><span class="info-value">10€</span></div>
+            </div>
+            
+            <div class="book-pitch">
+                <strong>Pitch :</strong><br><br>
+                "Traces" recounts a painter's journey.<br>
+                Everywhere he goes, he sees traces. He leaves them.<br>
+                The prints are made from everyday objects, sometimes very marked, sometimes hidden. 
+                The characters are sketched to better represent the mark the painter leaves on the world.<br><br>
+                "Traces" is aimed at children ages 4 and up and contemplative artists of all ages.
+            </div>
+        </div>
+    
+     
+    </div>
+    <div class="page-number">16</div>
+</div>
+
+
+<!-- PAGE 17 -->
+<div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+    
+    <div class="publisher-banner">
+        <div class="publisher-logo">CUO</div>
+        <div class="publisher-name">Comme une orange</div>
+    </div>
+    
+    <div class="book-content">
+        <div class="book-left">
+            <h2 class="book-title">We must turn off the tap!</h2>
+            
+            <div class="book-info">
+                <div class="info-row"><span class="info-value">Benoît Preteseille and Thibault Balahy</span></div>
+                <div class="info-row"><span class="info-value">3+</span></div>
+                <div class="info-row"><span class="info-value">20*20 cm, 40 pages, soft cover</span></div>
+                <div class="info-row"><span class="info-value">january 2016</span></div>
+                <div class="info-row">
+                    
+                    <span class="info-value">Represented worldwide</span>
+                </div>
+                <div class="info-row"><span class="info-value">9€</span></div>
+            </div>
+            
+            <div class="book-pitch">
+                <strong>Pitch :</strong><br><br>
+                One evening, I was brushing my teeth and forgot to turn off the faucet. Disaster!<br><br>
+                For their first illustrated children's book, Benoît Préteseille and Thibault Balahy have pulled off a real masterstroke.<br>
+                A flooded city, invaded by goldfish that soon attract a rather friendly bear.<br>
+                But of course, for the authorities, such a situation can't last!<br><br>
+                A book full of humor and irreverence.
+            </div>
+        </div>
+    
+       
+    </div>
+    <div class="page-number">17</div>
+</div>
+<!-- Page 18 -->
+<div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+    
+    <div class="publisher-banner">
+        <div class="publisher-logo">Melrakki</div>
+        <div class="publisher-name">Melrakki</div>
+    </div>
+    
+    <div class="book-content">
+        <div class="book-left">
+            <h2 class="book-title">Nina's autumn</h2>
+            
+            <div class="book-info">
+                <div class="info-row"><span class="info-value">Océane Azeau</span></div>
+                <div class="info-row"><span class="info-value">5+</span></div>
+                <div class="info-row"><span class="info-value">25*22 cm, 32 pages, hardcover</span></div>
+                <div class="info-row"><span class="info-value">november 2023</span></div>
+                <div class="info-row">
+                    
+                    <span class="info-value">Represented worldwide</span>
+                </div>
+                <div class="info-row"><span class="info-value">20€</span></div>
+            </div>
+            
+            <div class="book-pitch">
+                <strong>Pitch :</strong><br><br>
+                One morning after a storm, Nina finds an injured bird on her window sill. She nurses its wing but she is running out of time: the little bird must find its family before they all fly away to warmer countries...<br><br>
+                But how do you find a bird family in the vastness of the forest?<br>
+                Luckily for them, the animals of the wild that they meet in their journey will be there to help and guide them.
+            </div>
+        </div>
+    
+        
+    </div>
+    <div class="page-number">18</div>
+</div>
+
+<!-- Page 19 -->
+<div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 25%; left: 8%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 15%; right: 12%;"></div>
+    
+    <div class="publisher-banner">
+        <div class="publisher-logo">Melrakki</div>
+        <div class="publisher-name">Melrakki</div>
+    </div>
+    
+    <div class="book-content">
+        <div class="book-left">
+            <h2 class="book-title">Titi's Journey</h2>
+            
+            <div class="book-info">
+                <div class="info-row"><span class="info-value">Brigitte and Louise Ferry</span></div>
+                <div class="info-row"><span class="info-value">5+</span></div>
+                <div class="info-row"><span class="info-value">30,5*21,8 cm, 68 pages, hardcover</span></div>
+                <div class="info-row"><span class="info-value">november 2022</span></div>
+                <div class="info-row">
+                    
+                    <span class="info-value">Represented worldwide</span>
+                </div>
+                <div class="info-row"><span class="info-value">24,90€</span></div>
+            </div>
+            
+            <div class="book-pitch">
+                <strong>Pitch :</strong><br><br>
+                "Le voyage de Titi", or Titi’s journey, is the first children picture book of Brigitte and Louise Ferry.<br>
+                They want to tell, with their own words, the importance of biodiversity and of maintaining an environment in which human beings, fauna and flora can all live in harmony.<br><br>
+                This book tells the story of a summer: the first summer of a hedgehog. Throughout the seasons, Titi will have to overcome obstacles that his species has had to fight for decades.<br>
+                Usually a hedgehog can live for ten years, but they tend to die before celebrating their first birthday. Why? Because of intensive farming, pesticides, cars, dogs, cats...<br>
+                This endangered species’ survival depends almost entirely on human behavior.
+            </div>
+        </div>
+    
+        
+    </div>
+    <div class="page-number">19</div>
+</div>
+
+<!-- Page 20 -->
+<div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 18%; left: 7%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 12%; right: 9%;"></div>
+    
+    <div class="publisher-banner">
+        <div class="publisher-logo">Bluedot</div>
+        <div class="publisher-name">Bluedot</div>
+    </div>
+    
+    <div class="book-content">
+        <div class="book-left">
+            <h2 class="book-title">The butterfly in a hurry</h2>
+            
+            <div class="book-info">
+                <div class="info-row"><span class="info-value">Lucie Albon</span></div>
+                <div class="info-row"><span class="info-value">3+</span></div>
+                <div class="info-row"><span class="info-value">18*18 cm, 32 pages, hardcover</span></div>
+                <div class="info-row"><span class="info-value">july 2025</span></div>
+                <div class="info-row">
+                    
+                    <span class="info-value">Represented worldwide except South Korea, China, Hong-Kong and Taïwan</span>
+                </div>
+                <div class="info-row"><span class="info-value">12,90€</span></div>
+            </div>
+            
+            <div class="book-pitch">
+                <strong>Pitch :</strong><br><br>
+                An educational and emotional story about the butterfly life cycle.<br>
+                Miss Caterpillar is always in a hurry — too much in a hurry! In a hurry to grow, in a hurry to be transformed, in a hurry to fly away...<br><br>
+                But such impatience may well play a nasty trick on her.
+            </div>
+        </div>
+    
+       
+    </div>
+    <div class="page-number">20</div>
+</div>
+<!-- Page 21 -->
+<div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 15%; left: 10%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 8%; right: 15%;"></div>
+    
+    <div class="publisher-banner">
+        <div class="publisher-logo">Bluedot</div>
+        <div class="publisher-name">Bluedot</div>
+    </div>
+    
+    <div class="book-content">
+        <div class="book-left">
+            <h2 class="book-title">A curious ant</h2>
+            
+            <div class="book-info">
+                <div class="info-row"><span class="info-value">Daria Petrilli</span></div>
+                <div class="info-row"><span class="info-value">3+</span></div>
+                <div class="info-row"><span class="info-value">18*18 cm, 32 pages, hardcover</span></div>
+                <div class="info-row"><span class="info-value">april 2025</span></div>
+                <div class="info-row">
+                    
+                    <span class="info-value">Represented worldwide except China, Hong-Kong and Taïwan</span>
+                </div>
+                <div class="info-row"><span class="info-value">12,90€</span></div>
+            </div>
+            
+            <div class="book-pitch">
+                <strong>Pitch :</strong><br><br>
+                A poetic and dreamlike journey around the world seen through the eyes of a curious little ant.<br>
+                From a flower petal to a butterfly wing, from the savannah to the ocean, she travels, she discovers, she marvels...<br><br>
+                A sensory and visual invitation to contemplate.
+            </div>
+        </div>
+    
+        
+    </div>
+    <div class="page-number">21</div>
+</div>
+
+<!-- Page 22 -->
+<div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 22%; left: 6%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 13%;"></div>
+    
+    <div class="publisher-banner">
+        <div class="publisher-logo">Bluedot</div>
+        <div class="publisher-name">Bluedot</div>
+    </div>
+    
+    <div class="book-content">
+        <div class="book-left">
+            <h2 class="book-title">The mother fish</h2>
+            
+            <div class="book-info">
+                <div class="info-row"><span class="info-value">Cécile Roumiguière & Madeleine Veteau</span></div>
+                <div class="info-row"><span class="info-value">5+</span></div>
+                <div class="info-row"><span class="info-value">25*22 cm, 32 pages, hardcover</span></div>
+                <div class="info-row"><span class="info-value">march 2025</span></div>
+                <div class="info-row">
+                    
+                    <span class="info-value">Represented worldwide except China, Hong-Kong and Taïwan</span>
+                </div>
+                <div class="info-row"><span class="info-value">14,50€</span></div>
+            </div>
+            
+            <div class="book-pitch">
+                <strong>Pitch :</strong><br><br>
+                Deep down in the ocean lives a mother fish. She takes care of her babies, guiding them through the immensity of the sea, teaching them how to swim, how to eat, how to escape dangers...<br><br>
+                A poetic tale about transmission, protection and love, with vibrant illustrations.
+            </div>
+        </div>
+    
+       
+    </div>
+    <div class="page-number">22</div>
+</div>
+
+<!-- Page 23 -->
+<div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 17%; left: 9%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 14%; right: 11%;"></div>
+    
+    <div class="publisher-banner">
+        <div class="publisher-logo">Bluedot</div>
+        <div class="publisher-name">Bluedot</div>
+    </div>
+    
+    <div class="book-content">
+        <div class="book-left">
+            <h2 class="book-title">Lili Pollen</h2>
+            
+            <div class="book-info">
+                <div class="info-row"><span class="info-value">Sandrine Kao</span></div>
+                <div class="info-row"><span class="info-value">3+</span></div>
+                <div class="info-row"><span class="info-value">18*18 cm, 32 pages, hardcover</span></div>
+                <div class="info-row"><span class="info-value">february 2025</span></div>
+                <div class="info-row">
+                    
+                    <span class="info-value">Represented worldwide except China, Hong-Kong and Taïwan</span>
+                </div>
+                <div class="info-row"><span class="info-value">12,90€</span></div>
+            </div>
+            
+            <div class="book-pitch">
+                <strong>Pitch :</strong><br><br>
+                Lili Pollen is a little bee who dreams of discovering the world. From flower to flower, she spreads life and color, while marveling at the diversity of landscapes and animals she meets.<br><br>
+                A joyful and tender ode to biodiversity and curiosity.
+            </div>
+        </div>
+    
+       
+    </div>
+    <div class="page-number">23</div>
+</div>
+<div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+    <div class="publisher-banner">
+      <div class="publisher-logo">Bluedot</div>
+      <div class="publisher-name">Bluedot</div>
+    </div>
+    <div class="book-content">
+      <div class="book-left">
+        <h2 class="book-title">Dragons' dream</h2>
+        <div class="book-info">
+          <div class="info-row"><span class="info-value">Faustine Brunet</span></div>
+          <div class="info-row"><span class="info-value">3+</span></div>
+          <div class="info-row"><span class="info-value">18*18 cm, 32 pages</span></div>
+          <div class="info-row"><span class="info-value">november 2021</span></div>
+          <div class="info-row">
+            
+            <span class="info-value">Represented worldwide except South Korea, China, Hong-Kong and Taïwan</span>
+          </div>
+          <div class="info-row"><span class="info-value">14,90€</span></div>
+        </div>
+        <div class="book-pitch">
+          <strong>Pitch :</strong><br><br>
+          One day, a child climbs to the top of the tree at the bottom of his garden. Swept off by the wind, he begins a long journey around the planet, accompanied by three quirky dragons.
+          Inspired by traditional folk tales, this funny and poetic story raises awareness about our fragile ecosystems.
+        </div>
+      </div>
+     
+    </div>
+    <div class="page-number">24</div>
+  </div>
+  
+  <div class="page book-page chapter-1">
+    <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+    <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+    <div class="publisher-banner">
+      <div class="publisher-logo">Bluedot</div>
+      <div class="publisher-name">Bluedot</div>
+    </div>
+    <div class="book-content">
+      <div class="book-left">
+        <h2 class="book-title">It's all good with Bob</h2>
+        <div class="book-info">
+          <div class="info-row"><span class="info-value">Faustine Brunet</span></div>
+          <div class="info-row"><span class="info-value">3+</span></div>
+          <div class="info-row"><span class="info-value">18*18 cm, 32 pages</span></div>
+          <div class="info-row"><span class="info-value">september 2022</span></div>
+          <div class="info-row">
+            
+            <span class="info-value">Represented worldwide except South Korea, China, Hong-Kong and Taïwan</span>
+          </div>
+          <div class="info-row"><span class="info-value">14,90€</span></div>
+        </div>
+        <div class="book-pitch">
+          <strong>Pitch :</strong><br><br>
+          What a lovely van! It’s Bob’s van and together they help everyone animals, gardeners, children.
+          But suddenly a big black cloud starts coming out of the exhaust pipe! Bob has to look out for his friend’s health and there’s only one decision to make he has to leave the van in the garage. But what will happen next?
+          In the face of our current climate emergency, this funny story for children age 3 and up invites us to dream the impossible and meet the challenges of the future!
+        </div>
+      </div>
+      
+    </div>
+    <div class="page-number">25</div>
+  </div>
+  
+    <!-- Exemple de page de livre 2 -->
+    <div class="page book-page chapter-2">
+        <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+        <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+        <div class="publisher-banner">
+          <div class="publisher-logo">UCL</div>
+          <div class="publisher-name">Un chat la nuit</div>
+        </div>
+        <div class="book-content">
+          <div class="book-left">
+            <h2 class="book-title">Comme une orange</h2>
+            <div class="book-info">
+              <div class="info-row">
+                <span class="info-value">Marine Blandin</span>
+              </div>
+              <div class="info-row">
+                <span class="info-value">10+</span>
+              </div>
+              <div class="info-row">
+                <span class="info-value">16*23 cm, 112 pages</span>
+              </div>
+              <div class="info-row">
+                <span class="info-value">january 2019</span>
+              </div>
+              <div class="info-row">
+                
+                <span class="info-value">Represented worldwide</span>
+              </div>
+              <div class="info-row">
+                <span class="info-value">13€</span>
+              </div>
+            </div>
+            <div class="book-pitch">
+              <strong>Pitch :</strong><br><br>
+              In a large, bright loft lives a group of chatty potted plants. Arnica, Poli, Caster, Palmer, Phyllis and the others coexist in relative harmony, with only two skylights and a TV as an opening onto the world. Metaphysical discussions with birds, passionate romances, intensive television sessions, but also arguments, low blows, bouts of hypochondria, mass flowericides... Discover through these chlorophyll chronicles, the little-known daily life of the modern green plant.
+            </div>
+          </div>
+        
+        </div>
+        <div class="page-number">26</div>
+      </div>
+      <div class="page book-page chapter-2">
+        <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+        <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+        <div class="publisher-banner">
+            <div class="publisher-logo">CO</div>
+            <div class="publisher-name">Comme une orange</div>
+        </div>
+        <div class="book-content">
+            <div class="book-left">
+                <h2 class="book-title">The apple and the catch</h2>
+                <div class="book-info">
+                    <div class="info-row">
+                        <span class="info-value">Marie Deschamps</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">3+</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">15*22,50 cm, 44 pages</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">september 2024</span>
+                    </div>
+                    <div class="info-row">
+                        
+                        <span class="info-value">Represented worldwide</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">12€</span>
+                    </div>
+                </div>
+                <div class="book-pitch">
+                    <strong>Pitch :</strong><br><br>
+                    When a young fox discovers that an unknown world extends far beyond his tiny forest, he decides to set out to explore it. A coming-of-age tale where living life to the fullest helps you grow and make others grow.
+                </div>
+            </div>
+           
+        </div>
+        <div class="page-number">27</div>
+    </div>
+    
+    <div class="page book-page chapter-2">
+        <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+        <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+        <div class="publisher-banner">
+            <div class="publisher-logo">CO</div>
+            <div class="publisher-name">Comme une orange</div>
+        </div>
+        <div class="book-content">
+            <div class="book-left">
+                <h2 class="book-title">A Rainbow</h2>
+                <div class="book-info">
+                    <div class="info-row">
+                        <span class="info-value">Mathieu Siam</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">All public</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">21*15 cm, 80 pages</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">june 2018</span>
+                    </div>
+                    <div class="info-row">
+                        
+                        <span class="info-value">Represented worldwide</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">12€</span>
+                    </div>
+                </div>
+                <div class="book-pitch">
+                    <strong>Pitch :</strong><br><br>
+                    Like every year, Tree Frog and her friends organize a party in honor of the old oak tree. But this year, the tree is very tired. Throughout the day, Rainette tries to change its mind by offering it words and drawings. At the end of this colorful party, at the end of the sleepless night, at the end quite simply, the old oak tree will offer a wonderful gift... A story that speaks of the elders who show the way and the tree frogs who celebrate. A graphic novel for all ages.
+                </div>
+            </div>
+           
+        </div>
+        <div class="page-number">28</div>
+    </div>
+    
+    <div class="page book-page chapter-2">
+        <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+        <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+        <div class="publisher-banner">
+            <div class="publisher-logo">CO</div>
+            <div class="publisher-name">Comme une orange</div>
+        </div>
+        <div class="book-content">
+            <div class="book-left">
+                <h2 class="book-title">Galet</h2>
+                <div class="book-info">
+                    <div class="info-row">
+                        <span class="info-value">Mathieu Siam</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">All public</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">21*15 cm, 60 pages</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">april 2016</span>
+                    </div>
+                    <div class="info-row">
+                        
+                        <span class="info-value">Represented worldwide</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">11€</span>
+                    </div>
+                </div>
+                <div class="book-pitch">
+                    <strong>Pitch :</strong><br><br>
+                    Galet is a little girl. She talks to the Ocean. Together they play and enrich each other with the poetic moments of everyday life. One day, however, Galet will no longer hear the Ocean's voice. "Galet" is Mathieu Siam's first book. This black and blue graphic novel is filled with poetry. It tells us about the sea, it tells us about childhood. It tells us about the day a child fades away and no longer allows himself to have an imaginary friend with whom he shares all his secrets. The story resonates for a long time, instilling nostalgia and regret. And it makes us want to rediscover those parts of childhood that we sometimes forget along the way. For everyone, young and old alike.
+                </div>
+            </div>
+           
+        </div>
+        <div class="page-number">29</div>
+    </div>
+    
+    <div class="page book-page chapter-2">
+        <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+        <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+        <div class="publisher-banner">
+            <div class="publisher-logo">CO</div>
+            <div class="publisher-name">Comme une orange</div>
+        </div>
+        <div class="book-content">
+            <div class="book-left">
+                <h2 class="book-title">Pierre and Lou</h2>
+                <div class="book-info">
+                    <div class="info-row">
+                        <span class="info-value">Eric Wantiez and Marie Deschamps</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">All public</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">21*15 cm, 80 pages</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">January 2015</span>
+                    </div>
+                    <div class="info-row">
+                        
+                        <span class="info-value">Represented worldwide</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">12€</span>
+                    </div>
+                </div>
+                <div class="book-pitch">
+                    <strong>Pitch :</strong><br><br>
+                    A poetic and tender tale in color, Pierre et Lou tells the story of the little details in the love lives of extraordinary teenagers, in a fluid and astonishing graphic style that highlights creative work full of emotion and sensitivity. Accompanied by their pets, Pierre and Lou learn about first loves, in a familiar universe inhabited by a cat and a bird who humorously comment on the actions of young humans outside of time, as if suspended in a dream of tenderness.
+                </div>
+            </div>
+          
+        </div>
+        <div class="page-number">30</div>
+    </div>
+    
+    <div class="page book-page chapter-2">
+        <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+        <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+        <div class="publisher-banner">
+            <div class="publisher-logo">P</div>
+            <div class="publisher-name">Panthera</div>
+        </div>
+        <div class="book-content">
+            <div class="book-left">
+                <h2 class="book-title">Yune</h2>
+                <div class="book-info">
+                    <div class="info-row">
+                        <span class="info-value">Camille Gobourg</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">All public</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">16*23 cm, 160 pages</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">may 2025</span>
+                    </div>
+                    <div class="info-row">
+                        
+                        <span class="info-value">Represented worldwide</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">22€</span>
+                    </div>
+                </div>
+                <div class="book-pitch">
+                    <strong>Pitch :</strong><br><br>
+                    A textless comic strip, an oneiric, plant-filled journey carried by powerful illustrations. At the foot of a giant tree, a young woman emerges from mysterious waters and embarks on an initiatory quest through a plant world populated by strange creatures. Wordlessly, guided by the images, Yune tells the story of an endangered species and questions our relationship with nature. With Yune, Camille Gobourg creates a silent and captivating work, where each panel becomes a window onto a dreamlike universe, rich in textures and colors. Printed in Italy, with two Pantone colors to enhance the depth of the hues, this comic strip is both a powerful visual experience and a beautiful graphic object that questions our connection to life and the preservation of species.
+                </div>
+            </div>
+          
+        </div>
+        <div class="page-number">31</div>
+    </div>
+    
+    <div class="page book-page chapter-2">
+        <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+        <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+        <div class="publisher-banner">
+            <div class="publisher-logo">P</div>
+            <div class="publisher-name">Panthera</div>
+        </div>
+        <div class="book-content">
+            <div class="book-left">
+                <h2 class="book-title">Rain</h2>
+                <div class="book-info">
+                    <div class="info-row">
+                        <span class="info-value">Pauline Morel</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">6+</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">17*22,5 cm, 96 pages</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">march 2025</span>
+                    </div>
+                    <div class="info-row">
+                        
+                        <span class="info-value">Represented worldwide</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">18,50€</span>
+                    </div>
+                </div>
+                <div class="book-pitch">
+                    <strong>Pitch :</strong><br><br>
+                    A sensitive fable where nature, friendship, and difference weave the threads of a journey of initiation. Rain, Pauline Morel's first children's book, immerses us in a poetic and magical tale where the quest for self plays out between human beings and nature. Pluie, a singular character with an awkward silhouette, sees his arms lengthen when he is sad, causing unintentional disasters. After being chased from his village, he embarks on a journey of initiation to the heart of an enchanted forest. There, he meets a series of eccentric characters who help him understand his place in a world that seems to have rejected him. Through tender writing and a dreamlike graphic universe, Pauline Morel invites us to reflect on difference, self-acceptance, and the importance of the connection with nature. Her pastel colors and inventive compositions reveal all the beauty and magic of this gentle universe. Rain is an album that delicately speaks of the fragility of nature and the resilience of the individual, offering a moving exploration of friendship, transformation and respect for what surrounds us.
+                </div>
+            </div>
+           
+        </div>
+        <div class="page-number">32</div>
+    </div>
+    
+    <div class="page book-page chapter-2">
+        <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+        <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+        <div class="publisher-banner">
+            <div class="publisher-logo">P</div>
+            <div class="publisher-name">Panthera</div>
+        </div>
+        <div class="book-content">
+            <div class="book-left">
+                <h2 class="book-title">The Hungry King</h2>
+                <div class="book-info">
+                    <div class="info-row">
+                        <span class="info-value">Léa Roch</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">10+</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">16*23 cm, 80 pages</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">october 2023</span>
+                    </div>
+                    <div class="info-row">
+                        
+                        <span class="info-value">Represented worldwide</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">17,50€</span>
+                    </div>
+                </div>
+                <div class="book-pitch">
+                    <strong>Pitch :</strong><br><br>
+                    A king's initiatory quest to save his kingdom, illustrated with freehand and a beautiful use of color. The Hungry King tells the story of a great king devoured by an incessant and monstrous hunger! Panic reigns in the kingdom, and the doctors have only one diagnosis: "He's starving." The servants feed him until all the reserves are empty and are soon forced to resort to the last resort: to see the magician, who is said to be mad and unpredictable... Forced to explore himself (literally and figuratively), will the king find a solution to this all-consuming situation? Through this initiatory tale with a medieval feel, Léa Roch explores a lack of self-confidence and the mind-body connection. Adventures and encounters of all kinds are on the agenda in this graphic novel, whose layout and composition perfectly complement the story!
+                </div>
+            </div>
+          
+        </div>
+        <div class="page-number">33</div>
+    </div>
+    <div class="page book-page chapter-2">
+        <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+        <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+        <div class="publisher-banner">
+            <div class="publisher-logo">P</div>
+            <div class="publisher-name">Panthera</div>
+        </div>
+        <div class="book-content">
+            <div class="book-left">
+                <h2 class="book-title">Cosmos Big Band</h2>
+                <div class="book-info">
+                    <div class="info-row">
+                        <span class="info-value">Laura Bertrand</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">12+</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">16*19,5 cm, 136 pages</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">may 2023</span>
+                    </div>
+                    <div class="info-row">
+                        
+                        <span class="info-value">Represented worldwide</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">17,50€</span>
+                    </div>
+                </div>
+                <div class="book-pitch">
+                    <strong>Pitch :</strong><br><br>
+                    Cosmic delirium, all kinds of music, and above all... colorful characters! Alan, Irma, Solomon, Ray, and Dusty are five celestial coaches working tirelessly to distribute the departed souls of the Egg Complex: a world created by Melvin, a music-loving and somewhat capricious genius. Tired of their repetitive tasks and on the verge of burnout, our protagonists decide to leave their jobs to go on an adventure. Of course, nothing goes as planned, and chaos soon ensues throughout the cosmos! An adventure story and a critique of new societal models, this story, with its zany universe and colorful characters, offers several levels of interpretation. Laura Bertrand's tangy style is deceptively childish, the humor is sometimes dark and sometimes naive. The comic's offbeat tone will delight both young and old readers!
+                </div>
+            </div>
+        
+        </div>
+        <div class="page-number">34</div>
+    </div>
+    
+    <div class="page book-page chapter-2">
+        <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+        <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+        <div class="publisher-banner">
+            <div class="publisher-logo">P</div>
+            <div class="publisher-name">Panthera</div>
+        </div>
+        <div class="book-content">
+            <div class="book-left">
+                <h2 class="book-title">Only mauve remains</h2>
+                <div class="book-info">
+                    <div class="info-row">
+                        <span class="info-value">Pauline Dalmais</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">All public</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">21*27 cm, 72 pages</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">september 2024</span>
+                    </div>
+                    <div class="info-row">
+                        
+                        <span class="info-value">Represented worldwide</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">20€</span>
+                    </div>
+                </div>
+                <div class="book-pitch">
+                    <strong>Pitch :</strong><br><br>
+                    Flamboyant illustrations for an ode to nature. Rose is suffocating in a constricted daily life, the result of a pre-defined life path. In search of meaning, she decides to leave everything behind and embark on a journey of chance. Her wanderings lead her to the Vercors, where the beauty of the forests and her closeness to nature deeply move her. Immersed in these wild spaces, she gradually regains her freedom. This beautifully illustrated graphic novel is an ode to nature and celebrates the freedom to break free from the constraints of everyday life. Inspired by its author's own experience, Only Mauve Remains tells a journey of emancipation and renewal, notably through retraining and abandoning the "boxes" imposed by society. The vibrant and textured gouache illustrations reflect the immensity of nature, reaffirming the place of humans within a fragile ecosystem. Through her drawings and her palette, Pauline Dalmais expresses her love for the landscapes of the Vercors, while subtly evoking the environmental threats that weigh on these spaces.
+                </div>
+            </div>
+         
+        </div>
+        <div class="page-number">35</div>
+    </div>
+    <div class="page book-page chapter-3">
+        <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+        <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+        <div class="publisher-banner">
+            <div class="publisher-logo">CO</div>
+            <div class="publisher-name">Comme une orange</div>
+        </div>
+        <div class="book-content">
+            <div class="book-left">
+                <h2 class="book-title">Serena of the Desert</h2>
+                <div class="book-info">
+                    <div class="info-row">
+                        <span class="info-value">Claire Godard</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">6+</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">15*21 cm, 56 pages</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">january 2022</span>
+                    </div>
+                    <div class="info-row">
+                        
+                        <span class="info-value">Represented worldwide</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">12€</span>
+                    </div>
+                </div>
+                <div class="book-pitch">
+                    <strong>Pitch :</strong><br><br>
+                    In the driest desert in the world, Serena waits for rain. She waits for the rain that will swell the dry river and the current that will carry her to the ocean. Serena's dream? To listen to the whales singing.
+                </div>
+            </div>
+          
+        </div>
+        <div class="page-number">36</div>
+    </div>
+    <div class="page book-page chapter-4">
+        <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+        <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+        <div class="publisher-banner">
+            <div class="publisher-logo">M</div>
+            <div class="publisher-name">Melrakki</div>
+        </div>
+        <div class="book-content">
+            <div class="book-left">
+                <h2 class="book-title">Seasons of the Forest</h2>
+                <div class="book-info">
+                    <div class="info-row">
+                        <span class="info-value">Adrien Favre</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">30*24 cm, 200 pages</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">december 2021</span>
+                    </div>
+                    <div class="info-row">
+                        
+                        <span class="info-value">Represented worldwide</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">49€</span>
+                    </div>
+                </div>
+                <div class="book-pitch">
+                    <strong>Pitch :</strong><br><br>
+                    In a world where humanity takes more and more place, what is left for the last wild spaces and their inhabitants? Throughout the seasons, 'Seasons of the forests' is an ode to all the souls that we don't take the time to see anymore. The title is a call to poetry, engaging the readers to watch the world differently, to look for the wild, for what lived in this nature before and that is now slowly disappearing, leading the animals to live side by side with humans, sometimes through violence. The pictures are accompanied by texts written by Adrien Favre, in which he tells all of his feelings and reflections born during his observations of the natural world.
+                </div>
+            </div>
+          
+        </div>
+        <div class="page-number">37</div>
+    </div>
+    
+    <div class="page book-page chapter-4">
+        <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+        <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+        <div class="publisher-banner">
+            <div class="publisher-logo">M</div>
+            <div class="publisher-name">Melrakki</div>
+        </div>
+        <div class="book-content">
+            <div class="book-left">
+                <h2 class="book-title">Wild diary</h2>
+                <div class="book-info">
+                    <div class="info-row">
+                        <span class="info-value">Adrien Favre</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">30*24 cm, 160 pages</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">september 2019</span>
+                    </div>
+                    <div class="info-row">
+                        
+                        <span class="info-value">Represented worldwide</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">49€</span>
+                    </div>
+                </div>
+                <div class="book-pitch">
+                    <strong>Pitch :</strong><br><br>
+                    A beautiful and sober photography book. Sometimes dark, always sensitive, it is the result of 3 years seeking Beauty, from India to America and through our own territories of France, in the intimacy of wolfs, tigers, owls, bears or foxes. This book is also a testimony to our ecological impact towards the future generations, and a call to protect wild fauna.
+                </div>
+            </div>
+           
+        </div>
+        <div class="page-number">38</div>
+    </div>
+    
+    <div class="page book-page chapter-4">
+        <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+        <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+        <div class="publisher-banner">
+            <div class="publisher-logo">M</div>
+            <div class="publisher-name">Melrakki</div>
+        </div>
+        <div class="book-content">
+            <div class="book-left">
+                <h2 class="book-title">Second chance</h2>
+                <div class="book-info">
+                    <div class="info-row">
+                        <span class="info-value">Léa Cirotteau and Jonathan Feraud</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">30*24 cm, 120 pages</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">november 2022</span>
+                    </div>
+                    <div class="info-row">
+                        
+                        <span class="info-value">Represented worldwide</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">42€</span>
+                    </div>
+                </div>
+                <div class="book-pitch">
+                    <strong>Pitch :</strong><br><br>
+                    The day to day life of two wildness centers in Faune Alfort is shown in this 120 pages photography book. Stories complete the pictures to help better understand the animal world in our lifes where the wild has become a mere prop. It's in summer 2021 that Lea Cirotteau and Jonathan Feraud started their adventure: to show the work of the Faune Alfort association and help show the public the sufferings that animals go through due to the human impact on the environment. They want to underline through photographies the incredible work of the teams, and help understand the wild animals so as to better protect them.
+                </div>
+            </div>
+         
+        </div>
+        <div class="page-number">39</div>
+    </div>
+    
+    <div class="page book-page chapter-4">
+        <div class="decorative-element circle-decoration" style="top: 20%; left: 5%;"></div>
+        <div class="decorative-element triangle-decoration" style="bottom: 10%; right: 10%;"></div>
+        <div class="publisher-banner">
+            <div class="publisher-logo">M</div>
+            <div class="publisher-name">Melrakki</div>
+        </div>
+        <div class="book-content">
+            <div class="book-left">
+                <h2 class="book-title">Socotra, men and Dragon Trees</h2>
+                <div class="book-info">
+                    <div class="info-row">
+                        <span class="info-value">Cécile Palusinski and Benoît Palusinski</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">30*24 cm, 120 pages</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">november 2023</span>
+                    </div>
+                    <div class="info-row">
+                        
+                        <span class="info-value">Represented worldwide</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-value">42€</span>
+                    </div>
+                </div>
+                <div class="book-pitch">
+                    <strong>Pitch :</strong><br><br>
+                    On this exceptional island, a UNESCO World Heritage site known for its endemic rate and its biodiversity, no artistic project had been attempted before due to the difficulties of accessing the place because of the war. The authors lived on the Socotra island during 2 monthes to get those impressive photographies. They create the picture of a place whose rhythm is punctuated by the shapes of the dragon trees, magnificent trees that are unfortunately decimated by storms that get more violent every year; The profits from the sales of the book are given to the Socotra dragon blood tree association, to protect this species threatened with extinction.
+                </div>
+            </div>
+           
+        </div>
+        <div class="page-number">40</div>
+    </div>
+
+    
+    </div>
+
+    <script>
+        async function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const button = document.querySelector('.download-btn');
+            const progressBar = document.querySelector('.progress-bar');
+            const progressFill = document.querySelector('.progress-fill');
+            const statusText = document.querySelector('.status-text');
+            const filename = document.getElementById('filename').value || 'Catalogue-Droits-Etrangers-2025';
+            const quality = parseFloat(document.getElementById('quality').value);
+            
+            // Configuration
+            button.disabled = true;
+            button.textContent = '⏳ Génération en cours...';
+            progressBar.style.display = 'block';
+            statusText.textContent = 'Initialisation...';
+            
+            try {
+                // Créer le PDF au format paysage A4
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+                
+                // Obtenir toutes les pages
+                const pages = document.querySelectorAll('.page');
+                const totalPages = pages.length;
+                
+                for (let i = 0; i < totalPages; i++) {
+                    const page = pages[i];
+                    const progress = ((i + 1) / totalPages) * 100;
+                    
+                    statusText.textContent = `Traitement de la page ${i + 1}/${totalPages}...`;
+                    progressFill.style.width = `${progress}%`;
+                    
+                    // Attendre un petit délai pour que l'UI se mette à jour
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    try {
+                        // Capturer la page avec html2canvas
+                        const canvas = await html2canvas(page, {
+                            scale: quality,
+                            useCORS: true,
+                            allowTaint: false,
+                            backgroundColor: '#ffffff',
+                            width: page.offsetWidth,
+                            height: page.offsetHeight,
+                            scrollX: 0,
+                            scrollY: 0,
+                            windowWidth: page.offsetWidth,
+                            windowHeight: page.offsetHeight
+                        });
+                        
+                        // Calculer les dimensions pour s'adapter au format A4 paysage
+                        const imgData = canvas.toDataURL('image/jpeg', 0.98);
+                        const pdfWidth = pdf.internal.pageSize.getWidth();
+                        const pdfHeight = pdf.internal.pageSize.getHeight();
+                        
+                        // Calculer le ratio pour maintenir les proportions
+                        const imgWidth = canvas.width;
+                        const imgHeight = canvas.height;
+                        const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+                        
+                        const scaledWidth = imgWidth * ratio;
+                        const scaledHeight = imgHeight * ratio;
+                        
+                        // Centrer l'image sur la page
+                        const x = (pdfWidth - scaledWidth) / 2;
+                        const y = (pdfHeight - scaledHeight) / 2;
+                        
+                        // Ajouter une nouvelle page (sauf pour la première)
+                        if (i > 0) {
+                            pdf.addPage();
+                        }
+                        
+                        // Ajouter l'image au PDF
+                        pdf.addImage(imgData, 'JPEG', x, y, scaledWidth, scaledHeight);
+                        
+                    } catch (pageError) {
+                        console.error(`Erreur lors du traitement de la page ${i + 1}:`, pageError);
+                        statusText.textContent = `Erreur sur la page ${i + 1}, passage à la suivante...`;
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                }
+                
+                statusText.textContent = 'Finalisation du PDF...';
+                progressFill.style.width = '100%';
+                
+                // Télécharger le PDF
+                await new Promise(resolve => setTimeout(resolve, 500));
+                pdf.save(`${filename}.pdf`);
+                
+                statusText.textContent = '✅ PDF généré avec succès !';
+                button.textContent = '🎉 Téléchargement terminé !';
+                
+                // Réinitialiser après 3 secondes
+                setTimeout(() => {
+                    button.disabled = false;
+                    button.textContent = '🚀 Télécharger en PDF';
+                    progressBar.style.display = 'none';
+                    progressFill.style.width = '0%';
+                    statusText.textContent = '';
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Erreur lors de la génération du PDF:', error);
+                statusText.textContent = '❌ Erreur lors de la génération';
+                button.disabled = false;
+                button.textContent = '🚀 Télécharger en PDF';
+                progressBar.style.display = 'none';
+                
+                // Afficher plus de détails sur l'erreur
+                alert('Erreur lors de la génération du PDF. Veuillez réessayer ou vérifier votre connexion internet.');
+            }
+        }
+        
+        // Raccourci clavier pour générer le PDF
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                generatePDF();
+            }
+        });
+        
+        // Affichage d'informations utiles au chargement
+        window.addEventListener('load', function() {
+            console.log('🚀 Convertisseur HTML vers PDF chargé !');
+            console.log('💡 Astuce: Utilisez Ctrl+S (ou Cmd+S) pour générer rapidement le PDF');
+        });
+    </script>
+</body>
+</html>
